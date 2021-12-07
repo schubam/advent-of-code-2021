@@ -8,21 +8,50 @@ import (
 	"strings"
 )
 
-var (
+// ------- Part 1
+type Part1 struct {
 	horizontal int
 	depth      int
-)
-
-func forward(amount int) {
-	horizontal += amount
 }
 
-func up(amount int) {
-	depth -= amount
+func (p *Part1) result() int {
+	return p.horizontal * p.depth
 }
 
-func down(amount int) {
-	depth += amount
+func (p *Part1) forward(amount int) {
+	p.horizontal += amount
+}
+
+func (p *Part1) up(amount int) {
+	p.depth -= amount
+}
+
+func (p *Part1) down(amount int) {
+	p.depth += amount
+}
+
+// ------- Part 2
+type Part2 struct {
+	horizontal int
+	depth      int
+	aim        int
+}
+
+func (p *Part2) result() int {
+	return p.horizontal * p.depth
+}
+
+func (p *Part2) forward(amount int) {
+	p.horizontal += amount
+	p.depth += p.aim * amount
+}
+
+func (p *Part2) up(amount int) {
+	p.aim -= amount
+}
+
+func (p *Part2) down(amount int) {
+	p.aim += amount
 }
 
 func main() {
@@ -33,6 +62,9 @@ func main() {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
+
+	p1 := Part1{}
+	p2 := Part2{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -49,12 +81,21 @@ func main() {
 
 		switch command {
 		case "forward":
-			forward(amount)
+			p1.forward(amount)
+			p2.forward(amount)
 		case "up":
-			up(amount)
+			p1.up(amount)
+			p2.up(amount)
 		case "down":
-			down(amount)
+			p1.down(amount)
+			p2.down(amount)
 		}
 	}
-	fmt.Printf("horizontal: %d, depth: %d\n", horizontal, depth)
-	fmt.Printf("%d\n", horizontal*depth) }
+	fmt.Println("=== Part 1 ===")
+	fmt.Printf("horizontal: %d, depth: %d\n", p1.horizontal, p1.depth)
+	fmt.Printf("%d\n", p1.result())
+	fmt.Println("")
+	fmt.Println("=== Part 2 ===")
+	fmt.Printf("horizontal: %d, depth: %d\n", p2.horizontal, p2.depth)
+	fmt.Printf("%d\n", p2.result())
+}
