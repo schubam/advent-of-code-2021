@@ -1,139 +1,78 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"math"
-	"os"
+	"io/ioutil"
 	"strconv"
+	"strings"
 )
 
-func getNthBit(word, n uint16) uint16 {
-	if 1<<n&word > 0 {
-		//fmt.Printf("bit %d is set: %05b\n", n, value)
-		return 1
-	} else {
-		//fmt.Printf("bit %d is not set: %05b\n", n, value)
-		return 0
-	}
-}
+type calculation map[int]int
 
-func mostCommon(nums []uint16) uint16 {
-	ones := 0
-	for _, n := range nums {
-		if n == 1 {
-			ones++
+func CalculateBits(words []string) []calculation {
+	l := len(words[0])
+	result := []calculation{}
+
+	for pos := 0; pos < l; pos++ {
+		c := calculation{0: 0, 1: 0}
+		for _, w := range words {
+            //fmt.Printf("pos: %d, w: %s, w[pos]: %s, c: %v\n", pos, w, string(w[pos]), c)
+			if string(w[pos]) == "1" {
+				c[1]++
+			} else {
+				c[0]++
+			}
 		}
-	}
-	if ones >= len(nums)/2 {
-		return 1
-	}
-	return 0
-}
-
-func leastCommon(nums []uint16) uint16 {
-	ones := 0
-	for _, n := range nums {
-		if n == 1 {
-			ones++
-		}
-	}
-	if ones < len(nums)/2 {
-		return 1
-	}
-	return 0
-}
-
-type bitcriteria func(uint16) bool
-
-func filter(arr []uint16, col []uint16, f bitcriteria) []uint16 {
-	result := []uint16{}
-	for idx, i := range arr {
-		if f(uint16(i)) {
-			result = append(result, arr[idx])
-		}
+		result = append(result, c)
 	}
 	return result
 }
 
-func sliceColumn(column uint16, arr []uint16) []uint16 {
-	result := []uint16{}
-	for _, n := range arr {
-		result = append(result, getNthBit(uint16(n), column))
+type appendOne func(a, b int) bool
+
+func forEach(cs []calculation, f appendOne) int {
+	var gamma string
+
+	for _, c := range cs {
+		if f(c[0], c[1]) {
+			gamma = gamma + "1"
+		} else {
+			gamma = gamma + "0"
+		}
 	}
-	//for _, n := range result {
-	//fmt.Printf("bits: %015b\n", n)
-	//}
-	return result
+	//fmt.Printf("gamma word: %s\n", gamma)
+	i, err := strconv.ParseInt(gamma, 2, 32)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+	//fmt.Printf("gamma number: %d\n", i)
+	return int(i)
 }
 
-func findOxygenGeneratorValue(arr []uint16) uint16 {
-	firstColumn := sliceColumn(0, arr)
-	fmt.Println(firstColumn)
-	common := mostCommon(firstColumn)
-	fmt.Println(common)
-	filtered := filter(arr, firstColumn, func(n uint16) bool {
-		return n == common
+func epsilonRate(cs []calculation) int {
+	return forEach(cs, func(a, b int) bool {
+		return a > b
 	})
-	fmt.Println(filtered)
-
-	if len(filtered) > 0 {
-		return filtered[0]
-	} else {
-		return 0
-	}
 }
 
-var length int
+func gammaRate(cs []calculation) int {
+	return forEach(cs, func(a, b int) bool {
+		return a < b
+	})
+}
+
+func Solve(input string) int {
+	lines := strings.Split(input, "\n")
+    //fmt.Println(lines)
+	c := CalculateBits(lines)
+	return gammaRate(c) * epsilonRate(c)
+}
 
 func main() {
-	f, err := os.Open("data.txt")
+    data, err := ioutil.ReadFile("data.txt")
 	if err != nil {
-		fmt.Printf("error: %s\n", err.Error())
+		fmt.Println("error: ", err)
 	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-
-	arr := []uint16{}
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		length = len(line)
-		binary, err := strconv.ParseUint(line, 2, 16)
-		if err != nil {
-			fmt.Printf("error: %s\n", err.Error())
-		}
-		//fmt.Printf("bits: %05b\n", binary)
-		arr = append(arr, uint16(binary))
-	}
-
-	counts := map[uint16][]uint16{}
-	gammaRateArr := []uint16{}
-	epsilonRateArr := []uint16{}
-
-	for i := 0; i < length; i++ {
-		for _, binary := range arr {
-			counts[uint16(i)] = append(counts[uint16(i)], getNthBit(binary, uint16(i)))
-		}
-		gammaRateArr = append(gammaRateArr, mostCommon(counts[uint16(i)]))
-		epsilonRateArr = append(epsilonRateArr, leastCommon(counts[uint16(i)]))
-	}
-	//fmt.Println(counts)
-	//fmt.Println(gammaRateArr)
-	//fmt.Println(epsilonRateArr)
-
-	gammaRate := 0.0
-	epsilonRate := 0.0
-
-	for i := 0; i < length; i++ {
-		//fmt.Printf("gammaRate=%f += 2^%d * %d\n", gammaRate, i, gammaRateArr[i])
-		gammaRate += math.Pow(2, float64(i)) * float64(gammaRateArr[i])
-		epsilonRate += math.Pow(float64(2), float64(i)) * float64(epsilonRateArr[i])
-	}
-
-	oxy := findOxygenGeneratorValue(arr)
-
-	fmt.Println(gammaRate * epsilonRate)
-	fmt.Println(oxy)
+    content := strings.TrimSpace(string(data))
+	fmt.Println(Solve(content))
 }
