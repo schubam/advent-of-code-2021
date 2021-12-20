@@ -17,6 +17,14 @@ func (c calculation) winner() string {
 	}
 }
 
+func (c calculation) loser() string {
+	if c[0] <= c[1] {
+		return "0"
+	} else {
+		return "1"
+	}
+}
+
 func CalculateBits(words []string) []calculation {
 	l := len(words[0])
 	result := []calculation{}
@@ -69,7 +77,11 @@ func gammaRate(cs []calculation) int {
 	})
 }
 
-func DrillDown(lines []string) string {
+type WinnerFunc func(pos int, c calculation, collection []string) []string
+
+
+
+func DrillDown(lines []string, f WinnerFunc) string {
 	result := lines
 
     wordLen := len(lines[0])
@@ -80,17 +92,11 @@ func DrillDown(lines []string) string {
         }
         cs := CalculateBits(result)
 
-        var r2 []string
         c := cs[i]
 
-		for _, l := range result {
-			if string(l[i]) == c.winner() {
-                r2 = append(r2, l)
-			}
-        }
-        fmt.Printf("i: %d, c: %v, winner: %s, results: %v, r2: %v\n", i, c, c.winner(), result, r2)
+        result = f(i, c, result)
+        fmt.Printf("i: %d, c: %v, results: %v\n", i, c, result)
 
-        result = r2
 		if len(result) == 1 {
 			break
 		}
@@ -98,6 +104,45 @@ func DrillDown(lines []string) string {
     }
 
 	return result[0]
+}
+
+func Oxy(pos int, c calculation, collection []string) []string{
+        var result []string
+		for _, l := range collection {
+			if string(l[pos]) == c.winner() {
+                result = append(result, l)
+			}
+        }
+        return result
+    }
+
+func Co2(pos int, c calculation, collection []string) []string{
+        var result []string
+		for _, l := range collection {
+			if string(l[pos]) == c.loser(){
+                result = append(result, l)
+			}
+        }
+        return result
+    }
+
+func oxygenGeneratorRating(lines []string) int {
+    result := DrillDown(lines, Oxy)
+	i, err := strconv.ParseInt(result, 2, 32)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+    return int(i)
+}
+
+func co2Rating(lines []string) int {
+    result := DrillDown(lines, Co2)
+	i, err := strconv.ParseInt(result, 2, 32)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+    fmt.Println(i)
+    return int(i)
 }
 
 type result struct {
@@ -111,6 +156,7 @@ func Solve(input string) result {
 	c := CalculateBits(lines)
 	r := result{}
 	r.part1 = gammaRate(c) * epsilonRate(c)
+    r.part2 = oxygenGeneratorRating(lines) * co2Rating(lines)
 	return r
 }
 

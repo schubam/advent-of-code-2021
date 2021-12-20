@@ -64,7 +64,7 @@ func TestDrillDown(t *testing.T) {
 00010
 01010`), "\n")
 
-    got := DrillDown(input)
+    got := DrillDown(input, Oxy)
     want := "10111"
 	if got != want {
 		t.Errorf("got %s want %s", got, want)
