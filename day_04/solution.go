@@ -126,7 +126,7 @@ func NewBoard(s string) *Board {
 }
 
 func Solve() []int {
-	file, err := os.Open("data.txt")
+	file, err := os.Open("sample.txt")
 	if err != nil {
 		fmt.Printf("error: failed to open file")
 	}
