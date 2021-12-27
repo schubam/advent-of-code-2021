@@ -13,9 +13,6 @@ type Point struct {
 	x, y int
 }
 
-//func (p Point) index() int {
-//}
-
 type Line struct {
 	a, b Point
 }
@@ -63,7 +60,7 @@ func Solve(input string) int {
 			x2, _ := strconv.Atoi(matches[3])
 			y2, _ := strconv.Atoi(matches[4])
 			l := Line{Point{x1, y1}, Point{x2, y2}}
-			fmt.Printf("l: %v\n", l)
+			//fmt.Printf("l: %v\n", l)
 			lines = append(lines, l)
 		}
 	}
@@ -74,7 +71,7 @@ func Solve(input string) int {
 			overlap[point] += 1
 		}
 	}
-	fmt.Printf("overlap: %v\n", overlap)
+	//fmt.Printf("overlap: %v\n", overlap)
 
 	var count int
 	for _, value := range overlap {
