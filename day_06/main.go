@@ -7,6 +7,34 @@ import (
 	"strings"
 )
 
+func Solve_V2(s string) int {
+	sequence := strings.Split(strings.TrimSpace(s), ",")
+
+	population := make(map[int]int, 9)
+	for _, str := range sequence {
+		num, err := strconv.Atoi(str)
+		if err != nil {
+			fmt.Printf("error: %s\n", err)
+		}
+		population[num] += 1
+	}
+
+	for tick := 1; tick <= 256; tick++ {
+		zeros := population[0]
+		for i := 1; i < 9; i++ {
+			population[i-1] = population[i]
+		}
+		population[8] = zeros
+		population[6] += zeros
+	}
+
+	var num int
+	for _, v := range population {
+		num += v
+	}
+	return num
+}
+
 func Solve_V1(s string) int {
 	sequence := strings.Split(strings.TrimSpace(s), ",")
 
@@ -23,6 +51,7 @@ func Solve_V1(s string) int {
 
 	var toAdd int
 	for tick := 1; tick <= 80; tick++ {
+		fmt.Printf("\rtick: %d", tick)
 		for i, fish := range population {
 			switch fish {
 			case 1, 2, 3, 4, 5, 6, 7, 8:
@@ -48,5 +77,5 @@ func main() {
 		fmt.Printf("error: %s\n", err)
 	}
 
-	fmt.Println(Solve_V1(string(input)))
+	fmt.Println(Solve_V2(string(input)))
 }
